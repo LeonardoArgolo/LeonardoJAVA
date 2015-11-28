@@ -1,0 +1,469 @@
+
+CREATE DATABASE SISDB ;
+USE SISDB ;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`fornecedor`
+-- -----------------------------------------------------
+CREATE TABLE fornecedor (
+  id INT IDENTITY(1,1) NOT NULL ,
+  empresa VARCHAR(30) NOT NULL,
+  responsavel VARCHAR(30) NOT NULL,
+  fone VARCHAR(12) NOT NULL,   	  
+  email VARCHAR(40) NOT NULL,
+  PRIMARY KEY (id)
+)
+;
+   
+   
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`pedido`
+-- -----------------------------------------------------
+CREATE TABLE pedido (
+  id INT IDENTITY(1,1) NOT NULL,
+  fornecedor_id INT NOT NULL,
+  data DATETIME DEFAULT getdate() NOT NULL,
+  PRIMARY KEY (id, fornecedor_id),
+  INDEX fk_pedido_fornecedor1_idx (fornecedor_id ASC),
+  CONSTRAINT fk_pedido_fornecedor1
+    FOREIGN KEY (fornecedor_id)
+    REFERENCES fornecedor(id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`status`
+-- -----------------------------------------------------
+CREATE TABLE status (
+  id INT IDENTITY(1,1) NOT NULL ,
+  descricao VARCHAR(45) NOT NULL,
+  PRIMARY KEY (id)
+)
+;
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`pedido_status`
+-- -----------------------------------------------------
+CREATE TABLE pedido_status (
+  pedido_id INT NOT NULL,
+  status_id INT NOT NULL,
+  PRIMARY KEY (pedido_id, status_id),
+
+
+
+)
+;
+    FOREIGN KEY (pedido_id)
+    REFERENCES pedido (id)
+,  
+    FOREIGN KEY (status_id)
+    REFERENCES status (id)
+	--------------------- FK pedido.id nao foi criada
+ALTER TABLE pedido_status ADD FOREIGN KEY (pedido_id)
+REFERENCES pedido(id);
+show table pedido_status
+
+
+ALTER TABLE pedido_status ADD FOREIGN KEY (status_id)
+REFERENCES status(id);
+
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`produtoEstoque`
+-- -----------------------------------------------------
+CREATE TABLE produtoEstoque (
+  id INT IDENTITY(1,1) NOT NULL,
+  produto VARCHAR(10) NOT NULL,
+  preco_custo DECIMAL(10,2) NULL,
+  margem_lucro DECIMAL(10,2) NULL,
+  custo_medio DECIMAL(10,2) NULL,
+  preco_venda DECIMAL(10,2) NULL,
+  qtd_estoque INT NULL,
+  qtd_minima INT NULL,
+  PRIMARY KEY (id)
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`produtoEstoque_status`
+-- -----------------------------------------------------
+CREATE TABLE produtoEstoque_status (
+  produtoEstoque_id INT NOT NULL,
+  produtoEstoque_codigo INT NOT NULL,
+  status_id INT NOT NULL,
+  PRIMARY KEY (produtoEstoque_id, produtoEstoque_codigo, status_id),
+  INDEX fk_estoque_has_status_status1_idx (status_id ASC),
+  INDEX fk_estoque_has_status_estoque1_idx (produtoEstoque_id ASC),
+  INDEX fk_estoque_has_status_estoque2_idx (produtoEstoque_codigo ASC),
+  CONSTRAINT fk_estoque_has_status_estoque1
+    FOREIGN KEY (produtoEstoque_id)
+    REFERENCES produtoEstoque (id)
+,
+  CONSTRAINT fk_estoque_has_status_status1
+    FOREIGN KEY (status_id)
+    REFERENCES status (id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`produtos_pedido`
+-- -----------------------------------------------------
+CREATE TABLE produtos_pedido (
+  pedido_id INT NOT NULL,
+  pedido_fornecedor_id INT NOT NULL,
+  produtoEstoque_id INT NOT NULL,
+  qtd_produto INT NULL,
+  valorUnit DECIMAL(10,2) NULL,
+  valorTotal DECIMAL(10,2) NULL,
+  PRIMARY KEY (pedido_id, pedido_fornecedor_id, produtoEstoque_id),
+  INDEX fk_pedido_has_produtoEstoque_produtoEstoque1_idx (produtoEstoque_id ASC),
+  INDEX fk_pedido_has_produtoEstoque_pedido1_idx (pedido_id ASC, pedido_fornecedor_id ASC),
+  CONSTRAINT fk_pedido_has_produtoEstoque_pedido1
+    FOREIGN KEY (pedido_id , pedido_fornecedor_id)
+    REFERENCES pedido (id , fornecedor_id)
+,
+  CONSTRAINT fk_pedido_has_produtoEstoque_produtoEstoque1
+    FOREIGN KEY (produtoEstoque_id)
+    REFERENCES produtoEstoque (id)
+
+)
+;
+
+
+
+
+
+
+
+
+
+-- -----------------------------------------------------
+-- SETOR DE VENDAS
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`cliente`
+-- -----------------------------------------------------
+CREATE TABLE cliente (
+  id INT IDENTITY(1,1) NOT NULL,
+  nome VARCHAR(30) NOT NULL,
+  cpf VARCHAR(14) NULL,
+  fone VARCHAR(12) NULL,
+  email VARCHAR(40) NULL,
+  PRIMARY KEY (id)
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`cliente_status`
+-- -----------------------------------------------------
+CREATE TABLE cliente_status (
+  cliente_id INT NOT NULL,
+  status_id INT NOT NULL,
+  PRIMARY KEY (cliente_id, status_id),
+  INDEX fk_cliente_has_status_status1_idx (status_id ASC),
+  INDEX fk_cliente_has_status_cliente1_idx (cliente_id ASC),
+  CONSTRAINT fk_cliente_has_status_cliente1
+    FOREIGN KEY (cliente_id)
+    REFERENCES cliente (id)
+,
+  CONSTRAINT fk_cliente_has_status_status1
+    FOREIGN KEY (status_id)
+    REFERENCES status (id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`caixa`
+-- -----------------------------------------------------
+CREATE TABLE caixa (
+  id INT IDENTITY(1,1) NOT NULL,
+  descricao VARCHAR(30) NULL,
+  valor_entrada DECIMAL(10,2) NULL,
+  valor_saida DECIMAL(10,2) NULL,
+  valor_pago DECIMAL(10,2) NULL,
+  historico VARCHAR(10) NULL,
+  saldoAtual DECIMAL(10,2) NULL,
+  saldoAnterior DECIMAL(10,2) NULL,
+  PRIMARY KEY (id)
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`tipoDePgto`
+-- -----------------------------------------------------
+CREATE TABLE tipoDePgto (
+  id INT IDENTITY(1,1) NOT NULL,
+  caixa_id INT NOT NULL,
+  descricao VARCHAR(10) NOT NULL,
+  PRIMARY KEY (id, caixa_id),
+  INDEX fk_tipoDePgto_caixa1_idx (caixa_id ASC),
+  CONSTRAINT fk_tipoDePgto_caixa1
+    FOREIGN KEY (caixa_id)
+    REFERENCES caixa (id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`vendedor`
+-- -----------------------------------------------------
+CREATE TABLE vendedor (
+  id INT IDENTITY(1,1) NOT NULL,
+  nome VARCHAR(20) NOT NULL,
+  cpf VARCHAR(14) NOT NULL,
+  taxa DECIMAL(10,2) NULL,
+  PRIMARY KEY (id)
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`lancamento`
+-- -----------------------------------------------------
+CREATE TABLE lancamento (
+  id INT IDENTITY(1,1) NOT NULL,
+  descricao VARCHAR(10) NOT NULL,
+  PRIMARY KEY (id)
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`venda`
+-- -----------------------------------------------------
+CREATE TABLE venda (
+  id INT IDENTITY(1,1) NOT NULL,
+  vendedor_id INT NOT NULL,
+  tipoDePgto_id INT NOT NULL,
+  lancamento_id INT NOT NULL,
+  data DATETIME DEFAULT getdate() NOT NULL,
+  valorTotal DECIMAL(10,2) NULL,
+  desconto DECIMAL(10,2) NULL,
+  parcelas INT NULL,
+  PRIMARY KEY (id, vendedor_id, tipoDePgto_id, lancamento_id),
+  INDEX fk_venda_tipoDePgto1_idx (tipoDePgto_id ASC),
+  INDEX fk_venda_vendedor1_idx (vendedor_id ASC),
+  INDEX fk_venda_lancamento1_idx (lancamento_id ASC)
+--  ,
+--  CONSTRAINT fk_venda_tipoDePgto1
+--    FOREIGN KEY (tipoDePgto_id)
+--    REFERENCES tipoDePgto (id)
+--,
+--  CONSTRAINT fk_venda_vendedor1
+--    FOREIGN KEY (vendedor_id)
+--    REFERENCES vendedor (id)
+--,
+--  CONSTRAINT fk_venda_lancamento1
+--    FOREIGN KEY (lancamento_id)
+--    REFERENCES lancamento (id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`venda_cliente`
+-- -----------------------------------------------------
+CREATE TABLE venda_cliente (
+  venda_id INT NOT NULL,
+  venda_tipoDePgto_id INT NOT NULL,
+  cliente_id INT NOT NULL,
+  PRIMARY KEY (venda_id, venda_tipoDePgto_id, cliente_id),
+  INDEX fk_venda_has_cliente_cliente1_idx (cliente_id ASC),
+  INDEX fk_venda_has_cliente_venda1_idx (venda_id ASC, venda_tipoDePgto_id ASC)
+--  ,
+--  CONSTRAINT fk_venda_has_cliente_venda1
+--    FOREIGN KEY (venda_id , venda_tipoDePgto_id)
+--    REFERENCES venda (id , tipoDePgto_id)
+--,
+--  CONSTRAINT fk_venda_has_cliente_cliente1
+--    FOREIGN KEY (cliente_id)
+--    REFERENCES cliente (id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`notaFiscalSaida`
+-- -----------------------------------------------------
+CREATE TABLE notaFiscalSaida (
+  id INT IDENTITY(1,1) NOT NULL,
+  venda_id INT NOT NULL,
+  venda_tipoDePgto_id INT NOT NULL,
+  numero VARCHAR(20) NOT NULL, --SE NAO PRECISAR DELETAR
+  data DATETIME DEFAULT getdate() NOT NULL,
+  valor DECIMAL(10,2) NULL,
+  PRIMARY KEY (id, venda_id, venda_tipoDePgto_id),
+  INDEX fk_notaFiscalSaida_venda1_idx (venda_id ASC, venda_tipoDePgto_id ASC)
+  --,
+  --CONSTRAINT fk_notaFiscalSaida_venda1
+  --  FOREIGN KEY (venda_id , venda_tipoDePgto_id)
+  --  REFERENCES venda (id , tipoDePgto_id)
+
+)
+;
+
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`ContasAPagar`
+-- -----------------------------------------------------
+CREATE TABLE ContasAPagar (
+  id INT IDENTITY(1,1) NOT NULL,
+  pedido_id INT NOT NULL,
+  pedido_fornecedor_id INT NOT NULL,
+  caixa_id INT NOT NULL,
+  historico VARCHAR(10) NULL,
+  data DATE DEFAULT GETDATE() NOT NULL,
+  qtd_parcelas INT NULL,
+  valor DECIMAL(10,2) NULL,
+  data_vencimento DATE,
+  PRIMARY KEY (id, pedido_id, pedido_fornecedor_id, caixa_id),
+  INDEX fk_ContasAPagar_pedido1_idx (pedido_id ASC, pedido_fornecedor_id ASC),
+  INDEX fk_ContasAPagar_caixa1_idx (caixa_id ASC)
+--  ,
+--  CONSTRAINT fk_ContasAPagar_pedido1
+--    FOREIGN KEY (pedido_id , pedido_fornecedor_id)
+--    REFERENCES pedido (id , fornecedor_id)
+--,
+--  CONSTRAINT fk_ContasAPagar_caixa1
+--    FOREIGN KEY (caixa_id)
+--    REFERENCES caixa (id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`tipoDeLancamento`
+-- -----------------------------------------------------
+CREATE TABLE tipoDeLancamento (
+  id INT IDENTITY(1,1) NOT NULL,
+  caixa_id INT NOT NULL,
+  descricao VARCHAR(10) NOT NULL,
+  PRIMARY KEY (id, caixa_id),
+  INDEX fk_tipoDeLancamento_caixa1_idx (caixa_id ASC),
+  CONSTRAINT fk_tipoDeLancamento_caixa1
+    FOREIGN KEY (caixa_id)
+    REFERENCES caixa (id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`contaAReceber`
+-- -----------------------------------------------------
+CREATE TABLE contaAReceber (
+  id INT IDENTITY(1,1) NOT NULL,
+  venda_id INT NOT NULL,
+  venda_vendedor_id INT NOT NULL,
+  venda_tipoDePgto_id INT NOT NULL,
+  venda_lancamento_id INT NOT NULL,
+  historico VARCHAR(10) NULL,
+  data DATE DEFAULT getdate() NOT NULL,
+  qtd_parcela INT NULL,
+  valor DECIMAL(10,2) NULL,
+  data_pagamento DATE NOT NULL,
+  PRIMARY KEY (id, venda_id, venda_vendedor_id, venda_tipoDePgto_id, venda_lancamento_id),
+  INDEX fk_contaAReceber_venda1_idx (venda_id ASC, venda_vendedor_id ASC, venda_tipoDePgto_id ASC, venda_lancamento_id ASC),
+  CONSTRAINT fk_contaAReceber_venda1
+    FOREIGN KEY (venda_id , venda_vendedor_id , venda_tipoDePgto_id , venda_lancamento_id)
+    REFERENCES venda (id , vendedor_id , tipoDePgto_id , lancamento_id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`situacao`
+-- -----------------------------------------------------
+CREATE TABLE situacao (
+  id INT IDENTITY(1,1) NOT NULL,
+  descricao VARCHAR(15) NULL,
+  PRIMARY KEY (id)
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`contaAReceber_situacao`
+-- -----------------------------------------------------
+CREATE TABLE contaAReceber_situacao (
+  contaAReceber_id INT NOT NULL,
+  situacao_id INT NOT NULL,
+  PRIMARY KEY (contaAReceber_id, situacao_id),
+  INDEX fk_contaAReceber_has_situacao_situacao1_idx (situacao_id ASC),
+  INDEX fk_contaAReceber_has_situacao_contaAReceber1_idx (contaAReceber_id ASC)
+--  ,
+--  CONSTRAINT fk_contaAReceber_has_situacao_contaAReceber1
+--    FOREIGN KEY (contaAReceber_id)
+--    REFERENCES contaAReceber (id)
+--,
+--  CONSTRAINT fk_contaAReceber_has_situacao_situacao1
+--    FOREIGN KEY (situacao_id)
+--    REFERENCES situacao (id)
+
+)
+;
+
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`comissoes`
+-- -----------------------------------------------------
+CREATE TABLE comissoes (
+  id INT IDENTITY(1,1) NOT NULL,
+  data DATETIME DEFAULT getdate() NOT NULL,
+  valor DECIMAL(10,2) NULL,
+  vendedor_id INT NOT NULL,
+  PRIMARY KEY (id, vendedor_id)
+  --,
+  --INDEX fk_comissoes_vendedor1_idx (vendedor_id ASC),
+  --CONSTRAINT fk_comissoes_vendedor1
+  --  FOREIGN KEY (vendedor_id)
+  --  REFERENCES vendedor (id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`comissoes_situacao`
+-- -----------------------------------------------------
+CREATE TABLE comissoes_situacao (
+  comissoes_id INT NOT NULL,
+  situacao_id INT NOT NULL,
+  PRIMARY KEY (comissoes_id, situacao_id),
+  INDEX fk_comissoes_has_situacao_situacao1_idx (situacao_id ASC),
+  INDEX fk_comissoes_has_situacao_comissoes1_idx (comissoes_id ASC)
+--  ,
+--  CONSTRAINT fk_comissoes_has_situacao_comissoes1
+--    FOREIGN KEY (comissoes_id)
+--    REFERENCES comissoes (id)
+--,
+--  CONSTRAINT fk_comissoes_has_situacao_situacao1
+--    FOREIGN KEY (situacao_id)
+--    REFERENCES situacao (id)
+
+)
+;
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`setor`
+-- -----------------------------------------------------
+CREATE TABLE setor (
+  id INT IDENTITY(1,1) NOT NULL,
+  descricao VARCHAR(10) NOT NULL,
+  PRIMARY KEY (id)
+)
+;
+
+
+-- -----------------------------------------------------
+-- Table 'SQLSERVER'.`usuarioLogin`
+-- -----------------------------------------------------
+CREATE TABLE usuarioLogin (
+  id INT IDENTITY(1,1) NOT NULL,
+  nome VARCHAR(30) NOT NULL,
+  senha VARCHAR(10) NOT NULL,
+  email VARCHAR(25) NOT NULL,
+  setor_id INT NOT NULL,
+  PRIMARY KEY (id, setor_id),
+  INDEX fk_usuarioLogin_setor1_idx (setor_id ASC),
+  CONSTRAINT fk_usuarioLogin_setor1
+    FOREIGN KEY (setor_id)
+    REFERENCES setor (id)
+)
+;
