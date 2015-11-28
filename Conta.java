@@ -6,15 +6,14 @@ public class Conta {
     private double saldo;
     Scanner entrada = new Scanner(System.in);
     
-    public Conta(String nome, int conta, double saldo_inicial){
+    public Conta(String nome, int conta, double saldoInicial){
         this.nome=nome;
         this.conta=conta;
-        saldo=saldo_inicial;
+        saldo=saldoInicial;
         saques=0;
     }
     
     public void extrato(){
-        System.out.println("\tEXTRATO");
         System.out.println("Nome: " + this.nome);
         System.out.println("Número da conta: " + this.conta);
         System.out.printf("Saldo atual: %.2f\n",this.saldo);
@@ -29,7 +28,7 @@ public class Conta {
             System.out.println("Sacado: " + valor);
             System.out.println("Novo saldo: " + saldo + "\n");
         } else {
-            System.out.println("Saldo insuficiente. Faça um depósito\n");
+            System.out.println("Saldo insuficiente.");
         }
     }
     
